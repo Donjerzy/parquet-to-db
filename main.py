@@ -1,6 +1,7 @@
 import pyarrow.parquet as pp
 import pandas as pd
 from sqlalchemy import create_engine
+import argparse
 
 
 def main(args: dict):
@@ -40,8 +41,8 @@ def main(args: dict):
         batch_df = batch.to_pandas()
         try:
             batch_df.to_sql(con=engine,name=table_name, schema=schema, if_exists='append', index=False)
-        except:
-            print(f'Could not insert batch {completed} to table')
+        except Exception as e:
+            print(f'Could not insert batch {completed} to table because of {e}')
             unsuccessful.append(completed)
             continue
         print(f'Batch {completed} done')
@@ -52,16 +53,27 @@ def main(args: dict):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Parquet to Postgres Arguments')
+    parser.add_argument('--user', help='Database user')
+    parser.add_argument('--password', help='Database password')
+    parser.add_argument('--host', help='Database host')
+    parser.add_argument('--port', help='Database port')
+    parser.add_argument('--database', help='Database name')
+    parser.add_argument('--file', help='Parquet file name')
+    parser.add_argument('--exists', help='Database table exists boolean')
+    parser.add_argument('--table', help='Database table name')
+    parser.add_argument('--schema', help='Database schema')
+    args = parser.parse_args()
     main(
         {
-            'user': '',
-            'password': '',
-            'host': '',
-            'port': 0,
-            'database': '',
-            'file_name': '',
-            'table_exists': False,
-            'table_name': '',
-            'schema': ''
+            'user': args.user,
+            'password': args.password,
+            'host': args.host,
+            'port': args.port,
+            'database': args.database,
+            'file_name': args.file,
+            'table_exists': args.exists,
+            'table_name': args.table,
+            'schema': args.schema
         }
     )
